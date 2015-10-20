@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"os"
 )
 
 type Vertex struct {
@@ -52,6 +53,24 @@ func (v *VertexPointer) Abs() float64 {
 	return math.Sqrt(v.X*v.X + v.Y*v.Y)
 }
 
+// Reader-Writer example
+// A type implements an interface by implementing the
+// methods. There is no explicit declaration of intent.
+// NO "implements" keyword.
+
+type Reader interface {
+	Read(b []byte) (n int, err error)
+}
+
+type Writer interface {
+	Write(b []byte) (n int, err error)
+}
+
+type ReadWriter interface {
+	Reader
+	Writer
+}
+
 func main() {
 	v := &Vertex{3, 4}
 	fmt.Println(v.Abs())
@@ -73,4 +92,11 @@ func main() {
 	a = v // a *Vertex implements Abser
 
 	fmt.Println(a.Abs())
+
+	var w Writer
+
+	// os.Stdout implements Writer
+	w = os.Stdout
+
+	fmt.Fprintf(w, "hello, writer\n")
 }
