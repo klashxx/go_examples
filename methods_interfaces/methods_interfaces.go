@@ -35,6 +35,14 @@ type VertexPointer struct {
 	X, Y float64
 }
 
+// An interface type is defined by a set of methods
+type Abser interface {
+	Abs() float64
+}
+
+// A value of interface type can hold any
+// value that implements those methods.
+
 func (v *VertexPointer) Scale(f float64) {
 	v.X = v.X * f
 	v.Y = v.Y * f
@@ -58,4 +66,11 @@ func main() {
 	fmt.Printf("Before scaling: %+v, Abs: %v\n", vp, vp.Abs())
 	vp.Scale(5)
 	fmt.Printf("After scaling: %+v, Abs: %v\n", vp, vp.Abs())
+
+	var a Abser
+
+	a = f // a MyFloat implements Abser
+	a = v // a *Vertex implements Abser
+
+	fmt.Println(a.Abs())
 }
