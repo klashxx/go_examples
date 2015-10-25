@@ -27,6 +27,16 @@ type room struct {
 	clients map[*client]bool
 }
 
+// newRoom makes a new room that is ready to go.
+func newRoom() *room {
+	return &room{
+		forward: make(chan []byte),
+		join:    make(chan *client),
+		leave:   make(chan *client),
+		clients: make(map[*client]bool),
+	}
+}
+
 /*
 select statements whenever we need to synchronize or modify shared memory,
 or take different actions depending on the various activities within our channels.
@@ -93,6 +103,9 @@ func (r *room) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	// will ensure everything is tidied up after a user goes away.
 	defer func() { r.leave <- client }()
+	// The write method for the client is then called as a Go routine
 	go client.write()
+	// Finally, we call the read method in the main thread, which will block operations
+	// (keeping the connection alive) until it's time to close it.
 	client.read()
 }
