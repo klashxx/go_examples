@@ -43,13 +43,12 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// http.HandleFunc function maps the path pattern "/"
-	// move the HTML code from inside our Go code to chat.html
-
-	//  We do not store a reference to our newly created templateHandler
-	// type, but that's OK because we don't need to refer to it again.
-
+	//  create and then run a room for everybody to connect to:
+	r := newRoom()
 	http.Handle("/", &templateHandler{filename: "chat.html"})
+	http.Handle("/room", r)
+	// get the room going
+	go r.run()
 	// start the web server
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal("ListenAndServe:", err)
