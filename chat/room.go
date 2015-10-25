@@ -1,5 +1,12 @@
 package main
 
+import (
+	"log"
+	"net/http"
+
+	"github.com/gorilla/websocket"
+)
+
 /*
 We need a way for clients to join and leave rooms in order to ensure
 that the c.room.forward <- msg in client code forwards the message
@@ -54,4 +61,38 @@ func (r *room) run() {
 			}
 		}
 	}
+}
+
+// Turning a room into an HTTP handler
+
+const (
+	socketBufferSize  = 1024
+	messageBufferSize = 256
+)
+
+// In order to use web sockets, we must upgrade the HTTP connection
+//using the websocket.Upgrader type, which is reusable so we need only create one.
+
+var upgrader = &websocket.Upgrader{ReadBufferSize: socketBufferSize, WriteBufferSize: socketBufferSize}
+
+//  ServeHTTP method means a room can now act as a handler
+
+func (r *room) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	// we get the socket by calling the upgrader.Upgrade metho
+	socket, err := upgrader.Upgrade(w, req, nil)
+	if err != nil {
+		log.Fatal("ServeHTTP:", err)
+		return
+	}
+	client := &client{
+		socket: socket,
+		send:   make(chan []byte, messageBufferSize),
+		room:   r,
+	}
+	r.join <- client
+
+	// will ensure everything is tidied up after a user goes away.
+	defer func() { r.leave <- client }()
+	go client.write()
+	client.read()
 }
