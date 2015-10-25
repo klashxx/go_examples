@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -33,6 +35,7 @@ the loop will break and the socket will be closed.
 func (c *client) read() {
 	for {
 		if _, msg, err := c.socket.ReadMessage(); err == nil {
+			log.Print(msg)
 			c.room.forward <- msg
 		} else {
 			break
@@ -49,6 +52,7 @@ the socket fails, the for loop is broken and the socket is closed.
 
 func (c *client) write() {
 	for msg := range c.send {
+		log.Print(msg)
 		if err := c.socket.WriteMessage(websocket.TextMessage, msg); err != nil {
 			break
 		}

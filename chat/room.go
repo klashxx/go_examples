@@ -51,14 +51,17 @@ func (r *room) run() {
 		// it will only run one block of case code at a time.
 		//  ensure that our r.clients map is only ever modified by one thing at a time.
 		case client := <-r.join:
-			// joining
+
 			r.clients[client] = true
+			log.Println("Joining ", client)
 		case client := <-r.leave:
-			// leaving
+
+			log.Println("Leaving ", client)
 			delete(r.clients, client)
 			close(client.send)
 		case msg := <-r.forward:
 			// forward message to all clients
+			log.Println(msg)
 			for client := range r.clients {
 				select {
 				case client.send <- msg:
